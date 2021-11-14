@@ -1,0 +1,87 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title> API </title>
+    </head>
+    <body>
+        {% csrf_token %}
+        <script>
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        </script>
+        {% verbatim %}
+        <div id="app">
+            <form v-on:submit.prevent="submit()">
+                <fieldset>
+                    <legend>Request</legend>
+                    <label>
+                        <span><strong>Category</strong></span>
+                        <br/>
+                        <select name="category" v-model="formData.category" v-on:input="onInputCategory()">
+                            <option v-for="category in categoryList" :key="category.id" v-bind:value="category">{{ category.name }}</option>
+                        </select>
+                    </label>
+                    <template v-if="formData.category">
+                        <br/>
+                        <br/>
+                        <label>
+                            <span><strong>Command</strong></span>
+                            <br/>
+                            <select name="command" v-model="formData.command" v-on:input="onInputCommand()">
+                                <option v-for="command in formData.category.commandList" :key="command.id" v-bind:value="command">{{ command.name }}</option>
+                            </select>
+                        </label>
+                    </template>
+                    <template v-if="formData.command">
+                        <br/>
+                        <br/>
+                        <span><strong>Parameters</strong></span>
+                        <label v-for="parameter in formData.command.parameterList" :key="parameter.id" v-bind:value="parameter">
+                            <br/>
+                            <br/>
+                            <span><span v-if="parameter.required">*</span> {{ parameter.name }} - {{ parameter.description }}</span>
+                            <br/>
+                            <input type="text" v-model="formData.parameters[parameter.id]" :required="parameter.required"/>
+                        </label>
+                    </template>
+                </fieldset>
+                <br/>
+                <fieldset v-if="formData.command">
+                    <legend>Target</legend>
+                    <label>
+                        <span>API KEY</span>
+                        <br/>
+                        <input type="text" name="api_key" v-model="formData.apiKey">
+                    </label>
+                    <br/>
+                    <br/>
+                    <label>
+                        <span>Secret KEY</span>
+                        <br/>
+                        <input type="text" name="secret_key" v-model="formData.secretKey">
+                    </label>
+                    <br/>
+                    <br/>
+                    <label>
+                        <span>URL</span>
+                        <br/>
+                        <input type="text" name="url" v-model="formData.url">
+                    </label>
+                </fieldset>
+                <br/>
+                <fieldset v-if="formData.command">
+                    <button>Send</button>
+                </fieldset>
+            </form>
+            <div v-if="lastResponse">
+                <h3>Last Response:</h3>
+                {{ lastResponse }}
+            </div>
+        </div>
+        {% endverbatim %}
+        <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+        <script src="{% static 'js/api.js' %}"></script>
+    </body>
+</html>

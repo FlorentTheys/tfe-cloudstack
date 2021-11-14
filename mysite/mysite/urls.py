@@ -19,4 +19,5 @@ from django.urls import path, include
 urlpatterns = [
     path('eventlog/', include('eventlog.urls')),
     path('admin/', admin.site.urls),
+    path('', include('cs_api.urls'))
 ]
