@@ -6,7 +6,12 @@ from .models import APIRequest, APIRequestParameterValue, Category, Command, Par
 
 
 def index(request):
-    return render(request, 'base.html', {
+    return render(request, 'home.html', {
+    })
+
+
+def api(request):
+    return render(request, 'api_request.html', {
     })
 
 
