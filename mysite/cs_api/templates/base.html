@@ -27,24 +27,26 @@
                                 <li class="nav-item">
                                     <a class="nav-link" href="/">Home</a>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="/api">API</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="/">Sign in</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="/">Log out</a>
-                                </li>
+                                {% if request.user.is_authenticated %}
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="/api">API</a>
+                                    </li>
+                                {% endif %}
+                                {% if not request.user.is_authenticated %}
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="/login">Sign in</a>
+                                    </li>
+                                {% endif %}
+                                {% if request.user.is_authenticated %}
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="/logout">Log out</a>
+                                    </li>
+                                {% endif %}
                             </ul>
                         </div>
                     </div>
                 </nav>
             </header>
-            {% csrf_token %}
-            <script>
-                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-            </script>
             <main id="main">
                 {% block main %}
                 {% endblock %}

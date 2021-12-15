@@ -1,7 +1,8 @@
 import json
-
-from django.http import JsonResponse
-from django.shortcuts import render
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.http import Http404, JsonResponse
+from django.shortcuts import redirect, render
 from .models import APIRequest, APIRequestParameterValue, Category, Command, Parameter
 
 
@@ -11,11 +12,53 @@ def index(request):
 
 
 def api(request):
+    if not request.user.is_authenticated:
+        raise Http404
     return render(request, 'api_request.html', {
     })
 
 
+def signup_view(request):
+    username = request.POST.get('username', '')
+    password = request.POST.get('password', '')
+    is_already_taken = False
+    if username and password:
+        users = User.objects.filter(username=username)
+        if users.count() > 0:
+            is_already_taken = True
+        else:
+            user = User.objects.create_user(username=username, password=password)
+            login(request, user)
+            return redirect('/')
+    return render(request, 'signup.html', {
+        'is_already_taken': is_already_taken,
+        'username': username,
+        'password': password,
+    })
+
+
+def login_view(request):
+    username = request.POST.get('username', '')
+    password = request.POST.get('password', '')
+    if username and password:
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('/')
+    return render(request, 'login.html', {
+        'username': username,
+        'password': password,
+    })
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('/')
+
+
 def get_category_map(request):
+    if not request.user.is_authenticated:
+        raise Http404
     return JsonResponse({
         'categoryList': [
             {
@@ -44,6 +87,8 @@ def get_category_map(request):
 
 
 def receive_api_request(request):
+    if not request.user.is_authenticated:
+        raise Http404
     body = json.loads(request.body)
     form_data = body['form_data']
     api_key = form_data['api_key']

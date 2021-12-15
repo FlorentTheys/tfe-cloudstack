@@ -43,7 +43,7 @@ const app = new Vue({
                 }),
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken,
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content,
                 },
                 method: 'POST',
                 mode: 'same-origin',
