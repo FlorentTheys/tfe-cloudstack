@@ -30,13 +30,12 @@
                         <br/>
                         <br/>
                         <span><strong>Parameters</strong></span>
-                        <label v-for="parameter in formData.command.parameterList" :key="parameter.id" v-bind:value="parameter">
-                            <br/>
-                            <br/>
-                            <span><span v-if="parameter.required">*</span> {{ parameter.name }} - {{ parameter.description }}</span>
-                            <br/>
-                            <input type="text" v-model="formData.parameters[parameter.id]" :required="parameter.required"/>
-                        </label>
+                        <div class="form-group" v-for="parameter in formData.command.parameterList" :key="parameter.id">
+                            <label v-bind:value="parameter" v-bind:for="'parameter_' + parameter.id">
+                                <span><span v-if="parameter.required">*</span> {{ parameter.name }} - {{ parameter.description }}</span>
+                            </label>
+                            <input class="form-control" v-bind:id="'parameter_' + parameter.id" type="text" v-model="formData.parameters[parameter.id]" :required="parameter.required"/>
+                        </div>
                     </template>
                 </fieldset>
                 <br/>
@@ -73,6 +72,8 @@
             </div>
         </div>
     {% endverbatim %}
+    <hr/>
+    <a href="/fetch_category_list_view">Fetch categories from doc</a>
 {% endblock %}
 
 {% block js %}

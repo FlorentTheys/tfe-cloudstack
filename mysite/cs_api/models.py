@@ -2,10 +2,12 @@ import base64
 import hashlib
 import hmac
 import json
+import requests
 import urllib
 import urllib.parse
 import urllib.request
 
+from lxml import etree
 from django.db import models
 
 # Create your models here.
@@ -19,11 +21,35 @@ class Category(models.Model):
 
 
 class Command(models.Model):
+    doc_url = models.CharField(max_length=300)
     name = models.CharField(max_length=100)
     category_id = models.ForeignKey('Category', on_delete=models.RESTRICT, related_name='command_ids')
 
     def __str__(self):
         return self.name
+
+    def update_from_doc(self):
+        url = "https://cloudstack.apache.org/api/apidocs-4.11/"
+        req_get = requests.get(f'{url}{self.doc_url}')
+        root_node = etree.HTML(req_get.text)
+        name_node = root_node.xpath('.//h1')[0]
+        self.name = name_node.text
+        parameters_node = root_node.xpath('.//table[@class="apitable"]')[0]
+        for parameter_node in parameters_node.xpath('.//tr[not(contains(@class, "hed"))]'):
+            parameter_item_node = parameter_node.xpath('.//td')
+            name = ''.join(parameter_item_node[0].itertext())
+            description = ''.join(parameter_item_node[1].itertext())
+            required = ''.join(parameter_item_node[2].itertext()) == 'true'
+            parameter, was_created = Parameter.objects.get_or_create(
+                name=name,
+                command_id=self,
+                defaults={
+                    'description': description,
+                    'required': required,
+                },
+            )
+            parameter.description = description
+            parameter.required = required
 
 
 class Parameter(models.Model):

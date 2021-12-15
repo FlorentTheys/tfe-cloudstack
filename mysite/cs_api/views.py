@@ -1,8 +1,12 @@
 import json
+import requests
+
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
+from lxml import etree
+
 from .models import APIRequest, APIRequestParameterValue, Category, Command, Parameter
 
 
@@ -54,6 +58,25 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('/')
+
+
+def fetch_category_list_view(request):
+    url = "https://cloudstack.apache.org/api/apidocs-4.11/"
+    req_get = requests.get(url)
+    root_node = etree.HTML(req_get.text)
+    for category_node in root_node.xpath('.//div[@class="apismallbullet_box"]'):
+        category_title_node = category_node.xpath('.//h5')[0]
+        category, was_category_created = Category.objects.get_or_create(name=category_title_node.text)
+        for command_node in category_node.xpath('.//li/a'):
+            command, was_command_created = Command.objects.get_or_create(
+                doc_url=command_node.get('href'),
+                defaults={
+                    'name': command_node.text,
+                    'category_id': category,
+                },
+            )
+            command.update_from_doc()
+    return redirect('/api')
 
 
 def get_category_map(request):
