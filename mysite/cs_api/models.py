@@ -94,9 +94,7 @@ class APIRequest(models.Model):
         my_request['apikey'] = api_key
         my_request_str = '&'.join(['='.join([k, urllib.parse.quote(my_request[k])]) for k in my_request.keys()])
         sig_str = '&'.join(['='.join([k.lower(), urllib.parse.quote(my_request[k].lower().replace('+', '%20'))])for k in sorted(my_request.keys())])
-        sig = self.sign_request(sig_str, secret_key)
-        req_str = baseurl + my_request_str + '&signature=' + sig
-        my_request['signature'] = sig
+        req_str = baseurl + my_request_str + '&signature=' + self.sign_request(sig_str, secret_key)
         req = urllib.request.Request(req_str)
         try:
             res = urllib.request.urlopen(req)
