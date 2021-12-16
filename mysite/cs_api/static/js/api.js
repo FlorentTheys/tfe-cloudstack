@@ -24,7 +24,6 @@ const app = new Vue({
             this.formData.parameters = {};
         },
         async submit() {
-            console.log(this.formData);
             const response = await fetch('/receive_api_request', {
                 body: JSON.stringify({
                     'form_data': {
@@ -49,12 +48,11 @@ const app = new Vue({
             });
             const responseJson = await response.json();
             if (responseJson.error) {
-                console.log(responseJson.error);
                 this.lastResponse = responseJson.error;
             } else {
-                console.log(responseJson);
                 this.lastResponse = responseJson;
             }
+            this.lastResponse = JSON.stringify(this.lastResponse, null, 4);
         },
     },
 });

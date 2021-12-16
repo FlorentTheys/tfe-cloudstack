@@ -168,5 +168,8 @@ def receive_api_request(request):
         api_request_parameter_value = APIRequestParameterValue(request_id=api_request, parameter_id=Parameter.objects.get(pk=int(parameter['id'])), value=parameter['value'])
         api_request_parameter_value.save()
 
-    res = api_request.make_api_request(url=url, api_key=api_key, secret_key=secret_key)
+    try:
+        res = api_request.make_api_request(url=url, api_key=api_key, secret_key=secret_key)
+    except Exception as e:
+        return JsonResponse({'error': str(e)})
     return JsonResponse(res)
