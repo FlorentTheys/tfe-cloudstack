@@ -106,13 +106,9 @@ class APIRequest(models.Model):
         try:
             res = urllib.request.urlopen(req)
         except Exception as e:
-            error_message = e.read().decode("utf-8")
-            print('error: ', error_message)
-            return {'error': error_message}
+            return json.loads(e.read())
         else:
-            res_json = json.loads(res.read())
-            print('res: ', res_json)
-            return res_json
+            return json.loads(res.read())
 
 
 class APIRequestParameterValue(models.Model):
