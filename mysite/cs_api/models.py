@@ -94,12 +94,7 @@ class APIRequest(models.Model):
         my_request['apikey'] = api_key
         my_request_str = '&'.join(['='.join([k, urllib.parse.quote(my_request[k])]) for k in my_request.keys()])
         sig_str = '&'.join(['='.join([k.lower(), urllib.parse.quote(my_request[k].lower().replace('+', '%20'))])for k in sorted(my_request.keys())])
-        sig = hmac.new(secret_key.encode(), sig_str.encode(), hashlib.sha1)
-        sig = hmac.new(secret_key.encode(), sig_str.encode(), hashlib.sha1).digest()
-        sig = base64.encodebytes(hmac.new(secret_key.encode(), sig_str.encode(), hashlib.sha1).digest())
-        sig = base64.encodebytes(hmac.new(secret_key.encode(), sig_str.encode(), hashlib.sha1).digest()).strip()
-        diget = hmac.new(secret_key.encode(), sig_str.encode(), hashlib.sha1).digest()
-        sig = urllib.parse.quote(base64.encodebytes(diget).strip().decode())
+        sig = self.sign_request(sig_str, secret_key)
         req_str = baseurl + my_request_str + '&signature=' + sig
         my_request['signature'] = sig
         req = urllib.request.Request(req_str)
@@ -109,6 +104,15 @@ class APIRequest(models.Model):
             return json.loads(e.read())
         else:
             return json.loads(res.read())
+
+    def sign_request(self, sig_str, secret_key):
+        sig = hmac.new(secret_key.encode(), sig_str.encode(), hashlib.sha1)
+        sig = hmac.new(secret_key.encode(), sig_str.encode(), hashlib.sha1).digest()
+        sig = base64.encodebytes(hmac.new(secret_key.encode(), sig_str.encode(), hashlib.sha1).digest())
+        sig = base64.encodebytes(hmac.new(secret_key.encode(), sig_str.encode(), hashlib.sha1).digest()).strip()
+        diget = hmac.new(secret_key.encode(), sig_str.encode(), hashlib.sha1).digest()
+        sig = urllib.parse.quote(base64.encodebytes(diget).strip().decode())
+        return sig
 
 
 class APIRequestParameterValue(models.Model):
