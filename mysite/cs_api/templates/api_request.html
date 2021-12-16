@@ -7,6 +7,15 @@
         <div id="app">
             <form v-on:submit.prevent="submit()">
                 <fieldset>
+                    <legend>Cloudstack User</legend>
+                    <label>
+                        <select name="csUser" v-model="formData.csUser" v-on:input="onInputCategory()">
+                            <option v-for="csUser in cloudstackUsers" :key="csUser.id" v-bind:value="csUser">{{ csUser.url }}</option>
+                        </select>
+                    </label>
+                </fieldset>
+                <br/>
+                <fieldset>
                     <legend>Request</legend>
                     <label>
                         <span><strong>Category</strong></span>
@@ -37,29 +46,6 @@
                             <input class="form-control" v-bind:id="'parameter_' + parameter.id" type="text" v-model="formData.parameters[parameter.id]" :required="parameter.required"/>
                         </div>
                     </template>
-                </fieldset>
-                <br/>
-                <fieldset v-if="formData.command">
-                    <legend>Target</legend>
-                    <label>
-                        <span>API KEY</span>
-                        <br/>
-                        <input type="text" name="api_key" v-model="formData.apiKey">
-                    </label>
-                    <br/>
-                    <br/>
-                    <label>
-                        <span>Secret KEY</span>
-                        <br/>
-                        <input type="text" name="secret_key" v-model="formData.secretKey">
-                    </label>
-                    <br/>
-                    <br/>
-                    <label>
-                        <span>URL</span>
-                        <br/>
-                        <input type="text" name="url" v-model="formData.url">
-                    </label>
                 </fieldset>
                 <br/>
                 <fieldset v-if="formData.command">

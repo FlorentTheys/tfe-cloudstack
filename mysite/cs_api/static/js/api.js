@@ -6,13 +6,12 @@ const app = new Vue({
     el: '#app',
     data: {
         categoryList: [],
+        cloudstackUsers: [],
         formData: {
-            apiKey: '',
             category: undefined,
             command: undefined,
+            csUser: undefined,
             parameters: {},
-            secretKey: '',
-            url: '',
         },
         lastResponse: undefined,
     },
@@ -29,7 +28,7 @@ const app = new Vue({
             const response = await fetch('/receive_api_request', {
                 body: JSON.stringify({
                     'form_data': {
-                        'api_key': this.formData.apiKey,
+                        'api_key': this.formData.csUser.apiKey,
                         'command_id': this.formData.command.id,
                         'parameter_list': Object.entries(this.formData.parameters).map(([id, value]) => {
                             return {
@@ -37,8 +36,8 @@ const app = new Vue({
                                 'value': value,
                             };
                         }),
-                        'secret_key': this.formData.secretKey,
-                        'url': this.formData.url,
+                        'secret_key': this.formData.csUser.secretKey,
+                        'url': this.formData.csUser.url,
                     },
                 }),
                 headers: {
@@ -61,9 +60,10 @@ const app = new Vue({
 });
 
 const response = await fetch('/get_category_map');
-const categoryData = await response.json();
-console.log(categoryData);
+const data = await response.json();
 
-app.categoryList = categoryData['categoryList'];
+app.categoryList = data['categoryList'];
+app.cloudstackUsers = data['cloudstackUsers'];
+app.formData.csUser = app.cloudstackUsers[0];
 
 })();

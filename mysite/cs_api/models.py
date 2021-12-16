@@ -12,6 +12,15 @@ from django.db import models
 
 # Create your models here.
 
+from django.contrib.auth.models import User
+
+
+class CloudstackUser(models.Model):
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cloudstack_user_ids')
+    url = models.CharField(max_length=300)
+    api_key = models.CharField(max_length=86)
+    secret_key = models.CharField(max_length=86)
+
 
 class Category(models.Model):
     name = models.CharField(max_length=100)

@@ -7,19 +7,17 @@ from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
 from lxml import etree
 
-from .models import APIRequest, APIRequestParameterValue, Category, Command, Parameter
+from .models import APIRequest, APIRequestParameterValue, Category, CloudstackUser, Command, Parameter
 
 
 def index(request):
-    return render(request, 'home.html', {
-    })
+    return render(request, 'home.html')
 
 
 def api(request):
     if not request.user.is_authenticated:
         raise Http404
-    return render(request, 'api_request.html', {
-    })
+    return render(request, 'api_request.html')
 
 
 def signup_view(request):
@@ -58,6 +56,36 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('/')
+
+
+def cs_user(request):
+    if not request.user.is_authenticated:
+        raise Http404
+    return render(request, 'cs_user.html')
+
+
+def cs_user_add(request):
+    if not request.user.is_authenticated:
+        raise Http404
+    url = request.POST.get('url', '')
+    api_key = request.POST.get('api_key', '')
+    secret_key = request.POST.get('secret_key', '')
+    if url and api_key and secret_key:
+        CloudstackUser.objects.create(user_id=request.user, url=url, api_key=api_key, secret_key=secret_key)
+        return redirect('/cs_user')
+    return render(request, 'cs_user_add.html', {
+        'url': url,
+        'api_key': api_key,
+        'secret_key': secret_key,
+    })
+
+
+def cs_user_delete(request, cs_user_id):
+    if not request.user.is_authenticated:
+        raise Http404
+    cs_user = CloudstackUser.objects.get(user_id=request.user, id=cs_user_id)
+    cs_user.delete()
+    return redirect('/cs_user')
 
 
 def fetch_category_list_view(request):
@@ -105,6 +133,15 @@ def get_category_map(request):
                 'name': category.name,
             }
             for category in Category.objects.all()
+        ],
+        'cloudstackUsers': [
+            {
+                'id': cs_user.id,
+                'url': cs_user.url,
+                'apiKey': cs_user.api_key,
+                'secretKey': cs_user.secret_key,
+            }
+            for cs_user in request.user.cloudstack_user_ids.all()
         ],
     })
 

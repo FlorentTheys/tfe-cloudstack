@@ -1,0 +1,28 @@
+{% extends 'base_container.html' %}
+
+{% load static %}
+
+{% block content %}
+    <h1>Cloudstack Users</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>URL</th>
+                <th>API Key</th>
+                <th>Secret Key</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cs_user in request.user.cloudstack_user_ids.all %}
+                <tr>
+                    <td>{{ cs_user.url }}</td>
+                    <td>{{ cs_user.api_key }}</td>
+                    <td>{{ cs_user.secret_key }}</td>
+                    <td><a href="/cs_user_delete/{{ cs_user.id }}"><i class="fa fa-trash" title="Delete"/></a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="/cs_user_add">Add Cloudstack User</a>
+{% endblock %}
