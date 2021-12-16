@@ -1,0 +1,34 @@
+{% extends 'base_container.html' %}
+
+{% load static %}
+
+{% block content %}
+    <h1>API History Users</h1>
+    <p>Displaying {{ first }} - {{ last }} of {{ total }}.</p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date & Time</th>
+                <th>URL</th>
+                <th>Command</th>
+                <th>Result</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for api_request in api_request_list %}
+                <tr>
+                    <td>{{ api_request.created_at }}</td>
+                    <td>{{ api_request.cloudstack_user_id.url }}</td>
+                    <td>{{ api_request }}</td>
+                    <td>{{ api_request.result }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if prev_offset is not False %}
+        <a href="/api_history/{{ prev_offset }}/{{ limit }}">Previous</a>
+    {% endif %}
+    {% if next_offset is not False %}
+        <a href="/api_history/{{ next_offset }}/{{ limit }}">Next</a>
+    {% endif %}
+{% endblock %}

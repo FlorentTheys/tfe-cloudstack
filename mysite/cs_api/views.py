@@ -20,6 +20,26 @@ def api(request):
     return render(request, 'api_request.html')
 
 
+def api_history(request, offset=0, limit=10):
+    if not request.user.is_authenticated:
+        raise Http404
+    csu_ids = [csu.id for csu in request.user.cloudstack_user_ids.all()]
+    base_query = APIRequest.objects.filter(cloudstack_user_id__in=csu_ids)
+    next_offset = offset + limit
+    api_request_list = base_query.order_by('-created_at')[offset:next_offset]
+    total = base_query.count()
+    return render(request, 'api_history.html', {
+        'api_request_list': api_request_list,
+        'offset': offset,
+        'limit': limit,
+        'first': offset + 1,
+        'last': min(next_offset, total),
+        'prev_offset': max(0, offset - limit) if offset > 0 else False,
+        'next_offset': next_offset if next_offset < total else False,
+        'total': total,
+    })
+
+
 def signup_view(request):
     username = request.POST.get('username', '')
     password = request.POST.get('password', '')
@@ -151,25 +171,26 @@ def receive_api_request(request):
         raise Http404
     body = json.loads(request.body)
     form_data = body['form_data']
-    api_key = form_data['api_key']
+    cs_user_id = form_data['cs_user_id']
     command_id = form_data['command_id']
     parameter_list = form_data['parameter_list']
-    secret_key = form_data['secret_key']
-    url = form_data['url']
-    print(command_id, parameter_list, url, api_key, secret_key)
-
+    cs_user = CloudstackUser.objects.get(user_id=request.user, id=cs_user_id)
+    url = cs_user.url
+    api_key = cs_user.api_key
+    secret_key = cs_user.secret_key
     # TODO add date, ip, ...
     # TODO also save url?
-    api_request = APIRequest(command_id=Command.objects.get(pk=int(command_id)))
+    api_request = APIRequest(cloudstack_user_id=cs_user, command_id=Command.objects.get(pk=int(command_id)))
     api_request.save()
     for parameter in parameter_list:
         if parameter['value'] == '':
             continue
         api_request_parameter_value = APIRequestParameterValue(request_id=api_request, parameter_id=Parameter.objects.get(pk=int(parameter['id'])), value=parameter['value'])
         api_request_parameter_value.save()
-
     try:
         res = api_request.make_api_request(url=url, api_key=api_key, secret_key=secret_key)
     except Exception as e:
-        return JsonResponse({'error': str(e)})
+        res = {'error': str(e)}
+    api_request.result = res
+    api_request.save()
     return JsonResponse(res)

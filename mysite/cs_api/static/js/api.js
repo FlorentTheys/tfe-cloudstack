@@ -27,16 +27,14 @@ const app = new Vue({
             const response = await fetch('/receive_api_request', {
                 body: JSON.stringify({
                     'form_data': {
-                        'api_key': this.formData.csUser.apiKey,
                         'command_id': this.formData.command.id,
+                        'cs_user_id': this.formData.csUser.id,
                         'parameter_list': Object.entries(this.formData.parameters).map(([id, value]) => {
                             return {
                                 'id': id,
                                 'value': value,
                             };
                         }),
-                        'secret_key': this.formData.csUser.secretKey,
-                        'url': this.formData.csUser.url,
                     },
                 }),
                 headers: {

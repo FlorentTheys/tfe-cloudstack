@@ -5,6 +5,9 @@ from . import views
 urlpatterns = [
     path('', views.index, name='home'),
     path('api', views.api, name='API'),
+    path('api_history', views.api_history, name='API History'),
+    path('api_history/<int:offset>', views.api_history, name='API History'),
+    path('api_history/<int:offset>/<int:limit>', views.api_history, name='API History'),
     path('cs_user', views.cs_user, name='cs_user'),
     path('cs_user_add', views.cs_user_add, name='cs_user_add'),
     path('cs_user_delete/<int:cs_user_id>', views.cs_user_delete, name='cs_user_delete'),
