@@ -2,7 +2,9 @@ import base64
 import hashlib
 import hmac
 import json
+import pika
 import requests
+import threading
 import urllib
 import urllib.parse
 import urllib.request
@@ -20,6 +22,48 @@ class CloudstackUser(models.Model):
     url = models.CharField(max_length=300)
     api_key = models.CharField(max_length=86)
     secret_key = models.CharField(max_length=86)
+
+
+class CloudstackEventServer(models.Model):
+    host = models.CharField(max_length=300)
+    exchange = models.CharField(max_length=300, default='cloudstack-events')
+
+    def listen(self):
+
+        def on_message_callback(ch, method, properties, body):
+            event_log = CloudstackEventLog.objects.create(cloudstack_event_server_id=self, routing_key=method.routing_key, body=body)
+            print(f'message: {event_log}')
+
+        def start():
+            print(f"Starting to listen for events on {self}")
+            connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.host))
+            channel = connection.channel()
+            cs_exchange = 'cloudstack-events'
+            channel.exchange_declare(exchange=cs_exchange, exchange_type='topic', durable=True)
+
+            result = channel.queue_declare(f'listener{self.id}', durable=True)
+            queue_name = result.method.queue
+
+            channel.queue_bind(exchange=cs_exchange, queue=queue_name, routing_key='#')
+
+            channel.basic_consume(queue=queue_name, on_message_callback=on_message_callback, auto_ack=True)
+
+            channel.start_consuming()
+
+        t = threading.Thread(target=start)
+        t.start()
+
+    def __str__(self):
+        return f'{self.id} / {self.host} / {self.exchange}'
+
+
+class CloudstackEventLog(models.Model):
+    cloudstack_event_server_id = models.ForeignKey('CloudstackEventServer', on_delete=models.CASCADE, related_name='cloudstack_event_log_ids')
+    routing_key = models.CharField(max_length=300)
+    body = models.TextField()
+
+    def __str__(self):
+        return f'{self.cloudstack_event_server_id} : {self.id} / {self.routing_key} / {self.body}'
 
 
 class Category(models.Model):
