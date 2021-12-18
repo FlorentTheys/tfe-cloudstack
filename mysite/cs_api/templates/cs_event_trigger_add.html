@@ -4,24 +4,47 @@
 
 {% block content %}
     <h1>Add Event Trigger</h1>
-    <form method="POST">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="event_server_id">Event Server</label>
-            <select id="event_server_id" class="form-control" name="event_server_id" required>
-                {% for event_server in event_servers %}
-                    <option value="{{ event_server.id }}">{{ event_server }}</option>
-                {% endfor %}
-            </select>
+    {% verbatim %}
+        <div id="event_trigger">
+            <form v-on:submit.prevent="submit()">
+                <div class="form-group">
+                    <label for="event_server_id">Event Server</label>
+                    <select id="event_server_id" class="form-control" required v-model="formData.event_server_id">
+                        <option v-for="event_server in event_servers" :key="event_server.id" v-bind:value="event_server">{{ event_server.name }}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="cloudstack_user_id">Cloudstack User</label>
+                    <select id="cloudstack_user_id" class="form-control" required v-model="formData.cloudstack_user_id">
+                        <option v-for="cs_user in cs_users" :key="cs_user.id" v-bind:value="cs_user">{{ cs_user.name }}</option>
+                    </select>
+                </div>
+                <div class="form-group" v-for="condition in formData.conditions">
+                    <h3>Condition <i class="fa fa-trash" title="Remove" v-on:click="onClickRemoveCondition(condition)"></i></h3>
+                    <div>
+                        Event Data Key
+                        <input class="form-control" type="text" required v-model="condition.data_key"/>
+                    </div>
+                    <div>
+                        Operator
+                        <select id="cloudstack_user_id" class="form-control" required v-model="condition.operator">
+                            <option value="equals">Equals</option>
+                            <option value="contains">Contains</option>
+                            <option value="is-defined">Is defined</option>
+                        </select>
+                    </div>
+                    <div v-if="condition.operator !== 'is-defined'">
+                        Value
+                        <input class="form-control" type="text" required v-model="condition.value"/>
+                    </div>
+                </div>
+                <button class="btn btn-secondary" v-on:click.prevent="onClickAddCondition()">Add condition</button>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
         </div>
-        <div class="form-group">
-            <label for="cloudstack_user_id">Cloudstack User</label>
-            <select id="cloudstack_user_id" class="form-control" name="cloudstack_user_id" required>
-                {% for cs_user in cs_users %}
-                    <option value="{{ cs_user.id }}">{{ cs_user }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
+    {% endverbatim %}
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'js/event_trigger.js' %}"></script>
 {% endblock %}

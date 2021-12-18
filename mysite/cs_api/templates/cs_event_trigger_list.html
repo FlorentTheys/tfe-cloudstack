@@ -7,16 +7,24 @@
     <table class="table">
         <thead>
             <tr>
+                <th>ID</th>
                 <th>Event Server</th>
                 <th>Cloudstack User</th>
+                <th>Conditions</th>
                 <th>Delete</th>
             </tr>
         </thead>
         <tbody>
             {% for event_trigger in event_trigger_list %}
                 <tr>
+                    <td>{{ event_trigger.id }}</td>
                     <td>{{ event_trigger.cloudstack_event_server_id }}</td>
                     <td>{{ event_trigger.cloudstack_user_id }}</td>
+                    <td>
+                        {% for condition in event_trigger.cloudstack_event_trigger_condition_ids.all %}
+                            {{ condition }},
+                        {% endfor %}
+                    </td>
                     <td><a href="/cs_event_trigger_delete/{{ event_trigger.id }}"><i class="fa fa-trash" title="Delete"/></a></td>
                 </tr>
             {% endfor %}

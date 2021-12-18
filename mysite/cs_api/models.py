@@ -55,6 +55,7 @@ class CloudstackEventServer(models.Model):
         def on_message_callback(ch, method, properties, body):
             event_log = CloudstackEventLog.objects.create(cloudstack_event_server_id=self, routing_key=method.routing_key, body=body.decode("utf-8"))
             print(f'message: {event_log}')
+            event_log.trigger_actions()
 
         def start():
             print(f"Starting to listen for events on {self}")
@@ -84,13 +85,43 @@ class CloudstackEventLog(models.Model):
     routing_key = models.CharField(max_length=300)
     body = models.TextField()
 
+    def trigger_actions(self):
+        data = json.loads(self.body)
+        for trigger in self.cloudstack_event_server_id.cloudstack_event_trigger_ids.all():
+            trigger.execute_if_match(data)
     def __str__(self):
         return f'{self.cloudstack_event_server_id} : {self.id} / {self.routing_key} / {self.body}'
 
 
 class CloudstackEventTrigger(models.Model):
-    cloudstack_event_server_id = models.ForeignKey('CloudstackEventServer', on_delete=models.CASCADE)
+    cloudstack_event_server_id = models.ForeignKey('CloudstackEventServer', on_delete=models.CASCADE, related_name='cloudstack_event_trigger_ids')
     cloudstack_user_id = models.ForeignKey('CloudstackUser', on_delete=models.CASCADE)
+    def execute_if_match(self, data):
+        if all(condition.check_condition(data) for condition in self.cloudstack_event_trigger_condition_ids.all()):
+            print(f'executing {self}')
+
+    def __str__(self):
+        return f'{self.id} -/- {self.cloudstack_event_server_id} -/- {self.cloudstack_user_id}'
+
+
+class CloudstackEventTriggerCondition(models.Model):
+    cs_event_trigger_id = models.ForeignKey('CloudstackEventTrigger', on_delete=models.CASCADE, related_name='cloudstack_event_trigger_condition_ids')
+    data_key = models.CharField(max_length=100)
+    operator = models.CharField(max_length=100)
+    value = models.CharField(max_length=200)
+
+    def check_condition(self, data):
+        data_val = str(data.get(self.data_key, ''))
+        if self.operator == 'equals':
+            return self.value == data_val
+        if self.operator == 'contains':
+            return self.value in data_val
+        elif self.operator == 'is-defined':
+            return self.data_key in data
+        return False
+
+    def __str__(self):
+        return f'{self.data_key} {self.operator} {self.value}'
 
 
 class Category(models.Model):
