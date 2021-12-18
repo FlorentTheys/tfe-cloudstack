@@ -23,6 +23,24 @@ class CloudstackUser(models.Model):
     api_key = models.CharField(max_length=86)
     secret_key = models.CharField(max_length=86)
 
+    def make_api_request(self, command_id, parameter_list):
+        # TODO add date, ip, ...
+        # TODO also save url?
+        api_request = APIRequest(cloudstack_user_id=self, command_id=Command.objects.get(pk=int(command_id)))
+        api_request.save()
+        for parameter in parameter_list:
+            if parameter['value'] == '':
+                continue
+            api_request_parameter_value = APIRequestParameterValue(request_id=api_request, parameter_id=Parameter.objects.get(pk=int(parameter['id'])), value=parameter['value'])
+            api_request_parameter_value.save()
+        try:
+            res = api_request.make_api_request()
+        except Exception as e:
+            res = {'error': str(e)}
+        api_request.result = res
+        api_request.save()
+        return res
+
 
 class CloudstackEventServer(models.Model):
     host = models.CharField(max_length=300)
@@ -126,8 +144,8 @@ class APIRequest(models.Model):
     def __str__(self):
         return f"{self.command_id.name}?{'&'.join([str(v) for v in self.value_ids.all()])}"
 
-    def make_api_request(self, url, api_key, secret_key):
-        url_parts = urllib.parse.urlparse(url)
+    def make_api_request(self):
+        url_parts = urllib.parse.urlparse(self.cloudstack_user_id.url)
         baseurl = f'{url_parts.scheme}://{url_parts.netloc}{url_parts.path}?'
         my_request = {
             api_request_parameter_value.parameter_id.name: api_request_parameter_value.value
@@ -135,10 +153,10 @@ class APIRequest(models.Model):
         }
         my_request['command'] = self.command_id.name
         my_request['response'] = 'json'
-        my_request['apikey'] = api_key
+        my_request['apikey'] = self.cloudstack_user_id.api_key
         my_request_str = '&'.join(['='.join([k, urllib.parse.quote(my_request[k])]) for k in my_request.keys()])
         sig_str = '&'.join(['='.join([k.lower(), urllib.parse.quote(my_request[k].lower().replace('+', '%20'))])for k in sorted(my_request.keys())])
-        req_str = baseurl + my_request_str + '&signature=' + self.sign_request(sig_str, secret_key)
+        req_str = baseurl + my_request_str + '&signature=' + self.sign_request(sig_str, self.cloudstack_user_id.secret_key)
         req = urllib.request.Request(req_str)
         try:
             res = urllib.request.urlopen(req)
@@ -148,12 +166,8 @@ class APIRequest(models.Model):
             return json.loads(res.read())
 
     def sign_request(self, sig_str, secret_key):
-        sig = hmac.new(secret_key.encode(), sig_str.encode(), hashlib.sha1)
-        sig = hmac.new(secret_key.encode(), sig_str.encode(), hashlib.sha1).digest()
-        sig = base64.encodebytes(hmac.new(secret_key.encode(), sig_str.encode(), hashlib.sha1).digest())
-        sig = base64.encodebytes(hmac.new(secret_key.encode(), sig_str.encode(), hashlib.sha1).digest()).strip()
-        diget = hmac.new(secret_key.encode(), sig_str.encode(), hashlib.sha1).digest()
-        sig = urllib.parse.quote(base64.encodebytes(diget).strip().decode())
+        digest = hmac.new(secret_key.encode(), sig_str.encode(), hashlib.sha1).digest()
+        sig = urllib.parse.quote(base64.encodebytes(digest).strip().decode())
         return sig
 
 

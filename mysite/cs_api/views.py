@@ -7,7 +7,7 @@ from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
 from lxml import etree
 
-from .models import APIRequest, APIRequestParameterValue, Category, CloudstackUser, Command, Parameter
+from .models import APIRequest, Category, CloudstackUser, Command
 
 
 def index(request):
@@ -175,22 +175,4 @@ def receive_api_request(request):
     command_id = form_data['command_id']
     parameter_list = form_data['parameter_list']
     cs_user = CloudstackUser.objects.get(user_id=request.user, id=cs_user_id)
-    url = cs_user.url
-    api_key = cs_user.api_key
-    secret_key = cs_user.secret_key
-    # TODO add date, ip, ...
-    # TODO also save url?
-    api_request = APIRequest(cloudstack_user_id=cs_user, command_id=Command.objects.get(pk=int(command_id)))
-    api_request.save()
-    for parameter in parameter_list:
-        if parameter['value'] == '':
-            continue
-        api_request_parameter_value = APIRequestParameterValue(request_id=api_request, parameter_id=Parameter.objects.get(pk=int(parameter['id'])), value=parameter['value'])
-        api_request_parameter_value.save()
-    try:
-        res = api_request.make_api_request(url=url, api_key=api_key, secret_key=secret_key)
-    except Exception as e:
-        res = {'error': str(e)}
-    api_request.result = res
-    api_request.save()
-    return JsonResponse(res)
+    return JsonResponse(cs_user.make_api_request(command_id=command_id, parameter_list=parameter_list))
