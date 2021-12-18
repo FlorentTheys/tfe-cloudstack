@@ -348,6 +348,7 @@ def trigger_create(request):
         event_trigger.cloudstack_user_id = CloudstackUser.objects.get(pk=cloudstack_user_id)
         event_trigger.cloudstack_event_trigger_condition_ids.all().delete()
         event_trigger.cloudstack_event_trigger_action_parameter_ids.all().delete()
+        event_trigger.command_id = Command.objects.get(pk=command_id)
         event_trigger.save()
     else:
         event_trigger = CloudstackEventTrigger.objects.create(
