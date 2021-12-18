@@ -7,7 +7,7 @@ from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
 from lxml import etree
 
-from .models import APIRequest, Category, CloudstackUser, Command
+from .models import APIRequest, Category, CloudstackEventLog, CloudstackEventServer, CloudstackUser, Command
 
 
 def index(request):
@@ -32,7 +32,27 @@ def api_history(request, offset=0, limit=10):
         'api_request_list': api_request_list,
         'offset': offset,
         'limit': limit,
-        'first': offset + 1,
+        'first': min(offset + 1, total),
+        'last': min(next_offset, total),
+        'prev_offset': max(0, offset - limit) if offset > 0 else False,
+        'next_offset': next_offset if next_offset < total else False,
+        'total': total,
+    })
+
+
+def cs_event_history(request, offset=0, limit=10):
+    if not request.user.is_authenticated:
+        raise Http404
+    cs_event_server_ids = [csu.id for csu in request.user.cloudstack_event_server_ids.all()]
+    base_query = CloudstackEventLog.objects.filter(cloudstack_event_server_id__in=cs_event_server_ids)
+    next_offset = offset + limit
+    event_log_list = base_query.order_by('-id')[offset:next_offset]
+    total = base_query.count()
+    return render(request, 'cs_event_history.html', {
+        'event_log_list': event_log_list,
+        'offset': offset,
+        'limit': limit,
+        'first': min(offset + 1, total),
         'last': min(next_offset, total),
         'prev_offset': max(0, offset - limit) if offset > 0 else False,
         'next_offset': next_offset if next_offset < total else False,
@@ -106,6 +126,34 @@ def cs_user_delete(request, cs_user_id):
     cs_user = CloudstackUser.objects.get(user_id=request.user, id=cs_user_id)
     cs_user.delete()
     return redirect('/cs_user')
+
+
+def cs_event_server(request):
+    if not request.user.is_authenticated:
+        raise Http404
+    return render(request, 'cs_event_server.html')
+
+
+def cs_event_server_add(request):
+    if not request.user.is_authenticated:
+        raise Http404
+    host = request.POST.get('host', '')
+    exchange = request.POST.get('exchange', '')
+    if host and exchange:
+        CloudstackEventServer.objects.create(user_id=request.user, host=host, exchange=exchange)
+        return redirect('/cs_event_server')
+    return render(request, 'cs_event_server_add.html', {
+        'host': host or 'localhost',
+        'exchange': exchange or 'cloudstack-events',
+    })
+
+
+def cs_event_server_delete(request, cs_event_server_id):
+    if not request.user.is_authenticated:
+        raise Http404
+    cs_event_server = CloudstackEventServer.objects.get(user_id=request.user, id=cs_event_server_id)
+    cs_event_server.delete()
+    return redirect('/cs_event_server')
 
 
 def fetch_category_list_view(request):

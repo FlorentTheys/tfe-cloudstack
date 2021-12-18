@@ -43,13 +43,14 @@ class CloudstackUser(models.Model):
 
 
 class CloudstackEventServer(models.Model):
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cloudstack_event_server_ids')
     host = models.CharField(max_length=300)
     exchange = models.CharField(max_length=300, default='cloudstack-events')
 
     def listen(self):
 
         def on_message_callback(ch, method, properties, body):
-            event_log = CloudstackEventLog.objects.create(cloudstack_event_server_id=self, routing_key=method.routing_key, body=body)
+            event_log = CloudstackEventLog.objects.create(cloudstack_event_server_id=self, routing_key=method.routing_key, body=body.decode("utf-8"))
             print(f'message: {event_log}')
 
         def start():

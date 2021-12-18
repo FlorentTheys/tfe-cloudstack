@@ -1,0 +1,19 @@
+{% extends 'base_container.html' %}
+
+{% load static %}
+
+{% block content %}
+    <h1>Add Cloudstack Event Server</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="host">Host</label>
+            <input id="host" class="form-control" type="text" name="host" value="{{ host }}" placeholder="URL" required>
+        </div>
+        <div class="form-group">
+            <label for="exchange">Exchange</label>
+            <input id="exchange" class="form-control" type="text" name="exchange" value="{{ exchange }}" placeholder="API Key" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base_container.html' %}
+
+{% load static %}
+
+{% block content %}
+    <h1>Cloudstack Event Servers</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Host</th>
+                <th>Exchange</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cs_event_server in request.user.cloudstack_event_server_ids.all %}
+                <tr>
+                    <td>{{ cs_event_server.host }}</td>
+                    <td>{{ cs_event_server.exchange }}</td>
+                    <td><a href="/cs_event_server_delete/{{ cs_event_server.id }}"><i class="fa fa-trash" title="Delete"/></a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="/cs_event_server_add">Add Cloudstack Event Server</a>
+{% endblock %}

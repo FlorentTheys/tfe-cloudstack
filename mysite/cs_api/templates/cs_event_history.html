@@ -3,24 +3,22 @@
 {% load static %}
 
 {% block content %}
-    <h1>API History</h1>
+    <h1>Event History</h1>
     <p>Displaying {{ first }} - {{ last }} of {{ total }}.</p>
     <table class="table">
         <thead>
             <tr>
-                <th>Date & Time</th>
-                <th>URL</th>
+                <th>Server</th>
                 <th>Command</th>
                 <th>Result</th>
             </tr>
         </thead>
         <tbody>
-            {% for api_request in api_request_list %}
+            {% for event_log in event_log_list %}
                 <tr>
-                    <td>{{ api_request.created_at }}</td>
-                    <td>{{ api_request.cloudstack_user_id.url }}</td>
-                    <td>{{ api_request }}</td>
-                    <td>{{ api_request.result }}</td>
+                    <td>{{ event_log.cloudstack_event_server_id }}</td>
+                    <td>{{ event_log.routing_key }}</td>
+                    <td>{{ event_log.body }}</td>
                 </tr>
             {% endfor %}
         </tbody>
