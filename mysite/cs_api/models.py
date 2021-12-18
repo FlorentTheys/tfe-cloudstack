@@ -89,6 +89,7 @@ class CloudstackEventLog(models.Model):
         data = json.loads(self.body)
         for trigger in self.cloudstack_event_server_id.cloudstack_event_trigger_ids.all():
             trigger.execute_if_match(data)
+
     def __str__(self):
         return f'{self.cloudstack_event_server_id} : {self.id} / {self.routing_key} / {self.body}'
 
@@ -96,9 +97,20 @@ class CloudstackEventLog(models.Model):
 class CloudstackEventTrigger(models.Model):
     cloudstack_event_server_id = models.ForeignKey('CloudstackEventServer', on_delete=models.CASCADE, related_name='cloudstack_event_trigger_ids')
     cloudstack_user_id = models.ForeignKey('CloudstackUser', on_delete=models.CASCADE)
+    command_id = models.ForeignKey('Command', on_delete=models.RESTRICT)
+
     def execute_if_match(self, data):
-        if all(condition.check_condition(data) for condition in self.cloudstack_event_trigger_condition_ids.all()):
-            print(f'executing {self}')
+        for condition in self.cloudstack_event_trigger_condition_ids.all():
+            if not condition.check_condition(data):
+                return
+        print(f'executing {self}')
+        self.cloudstack_user_id.make_api_request(command_id=self.command_id.id, parameter_list=[
+            {
+                'id': parameter.parameter_id.id,
+                'value': parameter.get_value(data),
+            }
+            for parameter in self.cloudstack_event_trigger_action_parameter_ids.all()
+        ])
 
     def __str__(self):
         return f'{self.id} -/- {self.cloudstack_event_server_id} -/- {self.cloudstack_user_id}'
@@ -121,7 +133,25 @@ class CloudstackEventTriggerCondition(models.Model):
         return False
 
     def __str__(self):
-        return f'{self.data_key} {self.operator} {self.value}'
+        return f'"{self.data_key}" "{self.operator}" "{self.value}"'
+
+
+class CloudstackEventTriggerActionParameter(models.Model):
+    cs_event_trigger_id = models.ForeignKey('CloudstackEventTrigger', on_delete=models.CASCADE, related_name='cloudstack_event_trigger_action_parameter_ids')
+    parameter_id = models.ForeignKey('Parameter', on_delete=models.RESTRICT)
+    operator = models.CharField(max_length=100)
+    value = models.CharField(max_length=200)
+
+    def get_value(self, data):
+        data_val = str(data.get(self.value, ''))
+        if self.operator == 'from-data-key':
+            return data_val
+        if self.operator == 'set-value':
+            return self.value
+        return ''
+
+    def __str__(self):
+        return f'{self.parameter_id} {self.operator} {self.value}'
 
 
 class Category(models.Model):

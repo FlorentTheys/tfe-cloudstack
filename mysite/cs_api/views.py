@@ -7,7 +7,7 @@ from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
 from lxml import etree
 
-from .models import APIRequest, Category, CloudstackEventLog, CloudstackEventServer, CloudstackEventTrigger, CloudstackEventTriggerCondition, CloudstackUser, Command
+from .models import APIRequest, Category, CloudstackEventLog, CloudstackEventServer, CloudstackEventTrigger, CloudstackEventTriggerCondition, CloudstackEventTriggerActionParameter, CloudstackUser, Command, Parameter
 
 
 def index(request):
@@ -250,10 +250,12 @@ def cs_event_trigger_list(request, offset=0, limit=10):
     })
 
 
-def cs_event_trigger_add(request):
+def cs_event_trigger_add(request, event_trigger_id=0):
     if not request.user.is_authenticated:
         raise Http404
-    return render(request, 'cs_event_trigger_add.html')
+    return render(request, 'cs_event_trigger_add.html', {
+        'event_trigger_id': event_trigger_id,
+    })
 
 
 def cs_event_trigger_delete(request, cs_event_trigger_id):
@@ -264,7 +266,7 @@ def cs_event_trigger_delete(request, cs_event_trigger_id):
     return redirect('/cs_event_trigger_list')
 
 
-def get_data_for_trigger(request):
+def get_data_for_trigger(request, cs_event_trigger_id=0):
     res = {}
     res['event_servers'] = [
         {
@@ -280,19 +282,79 @@ def get_data_for_trigger(request):
         }
         for event_server in request.user.cloudstack_user_ids.all()
     ]
+    res['categoryList'] = [
+        {
+            'commandList': [
+                {
+                    'id': command.id,
+                    'name': command.name,
+                    'parameterList': [
+                        {
+                            'description': parameter.description,
+                            'id': parameter.id,
+                            'name': parameter.name,
+                            'required': parameter.required,
+                            'command': '',
+                            'value': '',
+                        }
+                        for parameter in command.parameter_ids.all()
+                    ],
+                }
+                for command in category.command_ids.all()
+            ],
+            'id': category.id,
+            'name': category.name,
+        }
+        for category in Category.objects.all()
+    ]
+    if cs_event_trigger_id:
+        cs_event_trigger = CloudstackEventTrigger.objects.get(pk=cs_event_trigger_id)
+        res['formData'] = {
+            'cloudstack_user_id': cs_event_trigger.cloudstack_user_id.id,
+            'command_id': cs_event_trigger.command_id.id,
+            'conditions': [
+                {
+                    'data_key': condition.data_key,
+                    'operator': condition.operator,
+                    'value': condition.value,
+                }
+                for condition in cs_event_trigger.cloudstack_event_trigger_condition_ids.all()
+            ],
+            'parameterList': [
+                {
+                    'id': parameter.parameter_id.id,
+                    'operator': parameter.operator,
+                    'value': parameter.value,
+                }
+                for parameter in cs_event_trigger.cloudstack_event_trigger_action_parameter_ids.all()
+            ],
+            'event_server_id': cs_event_trigger.cloudstack_event_server_id.id,
+        }
     return JsonResponse(res)
 
 
 def trigger_create(request):
     body = json.loads(request.body)
     form_data = body['form_data']
+    event_trigger_id = form_data.get('event_trigger_id')
     event_server_id = form_data['event_server_id']
     cloudstack_user_id = form_data['cloudstack_user_id']
     conditions = form_data['conditions']
-    event_trigger = CloudstackEventTrigger.objects.create(
-        cloudstack_event_server_id=CloudstackEventServer.objects.get(pk=event_server_id),
-        cloudstack_user_id=CloudstackUser.objects.get(pk=cloudstack_user_id),
-    )
+    parameter_list = form_data['parameter_list']
+    command_id = form_data['command_id']
+    if event_trigger_id:
+        event_trigger = CloudstackEventTrigger.objects.get(pk=event_trigger_id)
+        event_trigger.cloudstack_event_server_id = CloudstackEventServer.objects.get(pk=event_server_id)
+        event_trigger.cloudstack_user_id = CloudstackUser.objects.get(pk=cloudstack_user_id)
+        event_trigger.cloudstack_event_trigger_condition_ids.all().delete()
+        event_trigger.cloudstack_event_trigger_action_parameter_ids.all().delete()
+        event_trigger.save()
+    else:
+        event_trigger = CloudstackEventTrigger.objects.create(
+            cloudstack_event_server_id=CloudstackEventServer.objects.get(pk=event_server_id),
+            cloudstack_user_id=CloudstackUser.objects.get(pk=cloudstack_user_id),
+            command_id=Command.objects.get(pk=command_id),
+        )
     for condition in conditions:
         data_key = condition.get('data_key')
         operator = condition.get('operator')
@@ -301,6 +363,17 @@ def trigger_create(request):
             CloudstackEventTriggerCondition.objects.create(
                 cs_event_trigger_id=event_trigger,
                 data_key=data_key,
+                operator=operator,
+                value=value,
+            )
+    for parameter in parameter_list:
+        parameter_id = parameter.get('parameter_id')
+        operator = parameter.get('operator')
+        value = parameter.get('value')
+        if parameter_id and operator:
+            CloudstackEventTriggerActionParameter.objects.create(
+                cs_event_trigger_id=event_trigger,
+                parameter_id=Parameter.objects.get(pk=parameter_id),
                 operator=operator,
                 value=value,
             )

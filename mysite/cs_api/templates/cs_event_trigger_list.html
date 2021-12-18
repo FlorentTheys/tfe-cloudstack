@@ -11,6 +11,9 @@
                 <th>Event Server</th>
                 <th>Cloudstack User</th>
                 <th>Conditions</th>
+                <th>Command</th>
+                <th>Parameters</th>
+                <th>Edit</th>
                 <th>Delete</th>
             </tr>
         </thead>
@@ -25,6 +28,13 @@
                             {{ condition }},
                         {% endfor %}
                     </td>
+                    <td>{{ event_trigger.command_id }}</td>
+                    <td>
+                        {% for parameter in event_trigger.cloudstack_event_trigger_action_parameter_ids.all %}
+                            {{ parameter }},
+                        {% endfor %}
+                    </td>
+                    <td><a href="/cs_event_trigger_add/{{ event_trigger.id }}"><i class="fa fa-edit" title="Edit"/></a></td>
                     <td><a href="/cs_event_trigger_delete/{{ event_trigger.id }}"><i class="fa fa-trash" title="Delete"/></a></td>
                 </tr>
             {% endfor %}

@@ -3,7 +3,7 @@
 {% load static %}
 
 {% block content %}
-    <h1>Add Event Trigger</h1>
+    <h1>Event Trigger</h1>
     {% verbatim %}
         <div id="event_trigger">
             <form v-on:submit.prevent="submit()">
@@ -19,6 +19,7 @@
                         <option v-for="cs_user in cs_users" :key="cs_user.id" v-bind:value="cs_user">{{ cs_user.name }}</option>
                     </select>
                 </div>
+                <h2>Conditions</h2>
                 <div class="form-group" v-for="condition in formData.conditions">
                     <h3>Condition <i class="fa fa-trash" title="Remove" v-on:click="onClickRemoveCondition(condition)"></i></h3>
                     <div>
@@ -39,6 +40,42 @@
                     </div>
                 </div>
                 <button class="btn btn-secondary" v-on:click.prevent="onClickAddCondition()">Add condition</button>
+                <div class="form-group">
+                    <h2>Action</h2>
+                    <label>
+                        <span><strong>Category</strong></span>
+                        <br/>
+                        <select name="category" v-model="formData.category" v-on:input="onInputCategory()">
+                            <option v-for="category in categoryList" :key="category.id" v-bind:value="category">{{ category.name }}</option>
+                        </select>
+                    </label>
+                    <template v-if="formData.category">
+                        <br/>
+                        <br/>
+                        <label>
+                            <span><strong>Command</strong></span>
+                            <br/>
+                            <select name="command" v-model="formData.command">
+                                <option v-for="command in formData.category.commandList" :key="command.id" v-bind:value="command">{{ command.name }}</option>
+                            </select>
+                        </label>
+                    </template>
+                    <template v-if="formData.command">
+                        <br/>
+                        <br/>
+                        <span><strong>Parameters</strong></span>
+                        <div class="form-group" v-for="parameter in formData.command.parameterList" :key="parameter.id">
+                            <h3>{{ parameter.name }}</h3>
+                            Operator
+                            <select class="form-control" v-model="parameter.operator">
+                                <option value="from-data-key">From Event Data Key</option>
+                                <option value="set-value">Set Value</option>
+                            </select>
+                            Value
+                            <input class="form-control" type="text" v-model="parameter.value"/>
+                        </div>
+                    </template>
+                </div>
                 <button type="submit" class="btn btn-primary">Submit</button>
             </form>
         </div>
@@ -46,5 +83,8 @@
 {% endblock %}
 
 {% block js %}
+    <script type="text/javascript">
+        window.cs_api = { event_trigger_id: {{ event_trigger_id }} };
+    </script>
     <script src="{% static 'js/event_trigger.js' %}"></script>
 {% endblock %}
