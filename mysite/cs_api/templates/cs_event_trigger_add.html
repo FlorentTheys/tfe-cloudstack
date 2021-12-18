@@ -1,0 +1,27 @@
+{% extends 'base_container.html' %}
+
+{% load static %}
+
+{% block content %}
+    <h1>Add Event Trigger</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="event_server_id">Event Server</label>
+            <select id="event_server_id" class="form-control" name="event_server_id" required>
+                {% for event_server in event_servers %}
+                    <option value="{{ event_server.id }}">{{ event_server }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="cloudstack_user_id">Cloudstack User</label>
+            <select id="cloudstack_user_id" class="form-control" name="cloudstack_user_id" required>
+                {% for cs_user in cs_users %}
+                    <option value="{{ cs_user.id }}">{{ cs_user }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+{% endblock %}

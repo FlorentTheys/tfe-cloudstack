@@ -7,7 +7,7 @@ from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
 from lxml import etree
 
-from .models import APIRequest, Category, CloudstackEventLog, CloudstackEventServer, CloudstackUser, Command
+from .models import APIRequest, Category, CloudstackEventLog, CloudstackEventServer, CloudstackEventTrigger, CloudstackUser, Command
 
 
 def index(request):
@@ -157,6 +157,8 @@ def cs_event_server_delete(request, cs_event_server_id):
 
 
 def fetch_category_list_view(request):
+    if not request.user.is_authenticated:
+        raise Http404
     url = "https://cloudstack.apache.org/api/apidocs-4.11/"
     req_get = requests.get(url)
     root_node = etree.HTML(req_get.text)
@@ -224,3 +226,54 @@ def receive_api_request(request):
     parameter_list = form_data['parameter_list']
     cs_user = CloudstackUser.objects.get(user_id=request.user, id=cs_user_id)
     return JsonResponse(cs_user.make_api_request(command_id=command_id, parameter_list=parameter_list))
+
+
+# event triggers
+def cs_event_trigger_list(request, offset=0, limit=10):
+    if not request.user.is_authenticated:
+        raise Http404
+    csu_ids = [csu.id for csu in request.user.cloudstack_user_ids.all()]
+    cs_event_server_ids = [csu.id for csu in request.user.cloudstack_event_server_ids.all()]
+    base_query = CloudstackEventTrigger.objects.filter(cloudstack_event_server_id__in=cs_event_server_ids, cloudstack_user_id__in=csu_ids)
+    next_offset = offset + limit
+    event_trigger_list = base_query.order_by('-id')[offset:next_offset]
+    total = base_query.count()
+    return render(request, 'cs_event_trigger_list.html', {
+        'event_trigger_list': event_trigger_list,
+        'offset': offset,
+        'limit': limit,
+        'first': min(offset + 1, total),
+        'last': min(next_offset, total),
+        'prev_offset': max(0, offset - limit) if offset > 0 else False,
+        'next_offset': next_offset if next_offset < total else False,
+        'total': total,
+    })
+
+
+def cs_event_trigger_add(request):
+    if not request.user.is_authenticated:
+        raise Http404
+    event_servers = request.user.cloudstack_event_server_ids.all()
+    cs_users = request.user.cloudstack_user_ids.all()
+    event_server_id = request.POST.get('event_server_id')
+    cloudstack_user_id = request.POST.get('cloudstack_user_id')
+    if event_server_id and cloudstack_user_id:
+        CloudstackEventTrigger.objects.create(
+            cloudstack_event_server_id=CloudstackEventServer.objects.get(pk=event_server_id),
+            cloudstack_user_id=CloudstackUser.objects.get(pk=cloudstack_user_id),
+        )
+        return redirect('/cs_event_trigger_list')
+    return render(request, 'cs_event_trigger_add.html', {
+        'event_servers': event_servers,
+        'cs_users': cs_users,
+        'event_server_id': event_server_id,
+        'cloudstack_user_id': cloudstack_user_id,
+    })
+
+
+def cs_event_trigger_delete(request, cs_event_trigger_id):
+    if not request.user.is_authenticated:
+        raise Http404
+    cs_event_trigger = CloudstackEventTrigger.objects.get(pk=cs_event_trigger_id)
+    cs_event_trigger.delete()
+    return redirect('/cs_event_trigger_list')

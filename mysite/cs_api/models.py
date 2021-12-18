@@ -41,6 +41,9 @@ class CloudstackUser(models.Model):
         api_request.save()
         return res
 
+    def __str__(self):
+        return f'{self.id} / {self.user_id} / {self.url}'
+
 
 class CloudstackEventServer(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cloudstack_event_server_ids')
@@ -83,6 +86,11 @@ class CloudstackEventLog(models.Model):
 
     def __str__(self):
         return f'{self.cloudstack_event_server_id} : {self.id} / {self.routing_key} / {self.body}'
+
+
+class CloudstackEventTrigger(models.Model):
+    cloudstack_event_server_id = models.ForeignKey('CloudstackEventServer', on_delete=models.CASCADE)
+    cloudstack_user_id = models.ForeignKey('CloudstackUser', on_delete=models.CASCADE)
 
 
 class Category(models.Model):

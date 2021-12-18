@@ -26,6 +26,11 @@ urlpatterns = [
     path('cs_event_server_add', views.cs_event_server_add, name='cs_event_server_add'),
     path('cs_event_server_delete/<int:cs_event_server_id>', views.cs_event_server_delete, name='cs_event_server_delete'),
 
+    # event triggers
+    path('cs_event_trigger_list', views.cs_event_trigger_list, name='Event Trigger List'),
+    path('cs_event_trigger_add', views.cs_event_trigger_add, name='Event Trigger Add'),
+    path('cs_event_trigger_delete/<int:cs_event_trigger_id>', views.cs_event_trigger_delete, name='Event Trigger Delete'),
+
     # user
     path('signup', views.signup_view, name='Sign up'),
     path('login', views.login_view, name='Login'),
