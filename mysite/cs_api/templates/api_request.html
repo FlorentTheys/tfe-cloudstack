@@ -66,8 +66,15 @@
             </div>
         </div>
     {% endverbatim %}
-    <hr/>
-    <a href="/fetch_category_list_view">Fetch categories from doc</a>
+    <hr class="my-4"/>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Fetch categories</h5>
+            <p class="card-text">This should only be done once if the category list is empty, and it might take some time.
+            </p>
+            <a class="btn btn-secondary btn-sm" href="/fetch_category_list_view">Fetch categories from doc</a>
+        </div>
+    </div>
 {% endblock %}
 
 {% block js %}
