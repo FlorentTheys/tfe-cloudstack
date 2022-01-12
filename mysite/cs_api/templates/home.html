@@ -1,5 +1,28 @@
 {% extends 'base_container.html' %}
 
 {% block content %}
-    <h1>Hello</h1>
+    <div class="card">
+        <div class="card-header">
+            <h1 class="m-0">Welcome to CloudStack API</h1>
+        </div>
+        <div class="card-body">
+            <p class="card-text">A web based solution to manage CloudStack API request and events.</p>
+        </div>
+        <img class="card-img-bottom" src="/static/images/cloudstack.png" alt="cloudstack logo"/>
+    </div>
+    <div class="card mt-2">
+        <div class="card-body">
+            <div class="alert alert-info mt-4" role="alert">
+                <h5><i class="fa fa-info-circle mr-1"></i>Getting started:</h5>
+                <ol class="mb-0">
+                    <li><a href="/signup">sign up or log in</a>,</li>
+                    <li>this will unlock the page to <a href="/cs_user_add">add a CloudStack user</a> which must be your first step,</li>
+                    <li>then you will be able to <a href="api">make API requests</a> as the chosen user on the chosen server.</li>
+                    <li>If you want to add event triggers, first <a href="/cs_event_server">register an event server</a>,</li>
+                    <li>then you will be able to <a href="/cs_event_trigger_add">add event triggers</a>.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
