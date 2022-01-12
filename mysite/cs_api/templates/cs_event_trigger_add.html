@@ -65,7 +65,8 @@
                         <br/>
                         <span><strong>Parameters</strong></span>
                         <div class="form-group" v-for="parameter in formData.command.parameterList" :key="parameter.id">
-                            <h3>{{ parameter.name }}</h3>
+                            <h3><span v-if="parameter.required">*</span> {{ parameter.name }}</h3>
+                            <span>{{ parameter.description }}</span><br/>
                             Operator
                             <select class="form-control" v-model="parameter.operator">
                                 <option value="from-data-key">From Event Data Key</option>
