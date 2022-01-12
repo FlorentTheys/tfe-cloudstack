@@ -3,32 +3,32 @@
 {% load static %}
 
 {% block content %}
-    <h1>API History</h1>
-    <p>Displaying {{ first }} - {{ last }} of {{ total }}.</p>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date & Time</th>
-                <th>URL</th>
-                <th>Command</th>
-                <th>Result</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for api_request in api_request_list %}
-                <tr>
-                    <td>{{ api_request.created_at }}</td>
-                    <td>{{ api_request.cloudstack_user_id.url }}</td>
-                    <td>{{ api_request }}</td>
-                    <td>{{ api_request.result }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% if prev_offset is not False %}
-        <a href="/api_history/{{ prev_offset }}/{{ limit }}">Previous</a>
-    {% endif %}
-    {% if next_offset is not False %}
-        <a href="/api_history/{{ next_offset }}/{{ limit }}">Next</a>
-    {% endif %}
+    <div class="card mb-2">
+        <div class="card-header">
+            <h1>API History</h1>
+        </div>
+        <div class="card-body">
+            <p>Displaying {{ first }} - {{ last }} of {{ total }}. Most recent are shown first.</p>
+            <a class="btn btn-secondary {% if prev_offset is False %}disabled{% endif %}" href="/api_history/{{ prev_offset }}/{{ limit }}" >Previous</a>
+            <a class="btn btn-primary {% if next_offset is False %}disabled{% endif %}" href="/api_history/{{ next_offset }}/{{ limit }}">Next</a>
+        </div>
+    </div>
+    {% for api_request in api_request_list %}
+        <div class="card mb-2">
+            <div class="card-header">
+                <span class="badge badge-info">{{ api_request.created_at }}</span> <span>{{ api_request.cloudstack_user_id.url }}</span>
+                <br>
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">{{ api_request }}</h3>
+                <pre>{{ api_request.result }}</<pre>
+            </div>
+        </div>
+    {% endfor %}
+    <div class="card mb-2">
+        <div class="card-body">
+            <a class="btn btn-secondary {% if prev_offset is False %}disabled{% endif %}" href="/api_history/{{ prev_offset }}/{{ limit }}" >Previous</a>
+            <a class="btn btn-primary {% if next_offset is False %}disabled{% endif %}" href="/api_history/{{ next_offset }}/{{ limit }}">Next</a>
+        </div>
+    </div>
 {% endblock %}

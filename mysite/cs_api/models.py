@@ -37,7 +37,7 @@ class CloudstackUser(models.Model):
             res = api_request.make_api_request()
         except Exception as e:
             res = {'error': str(e)}
-        api_request.result = res
+        api_request.result = json.dumps(res, indent=4)
         api_request.save()
         return res
 
