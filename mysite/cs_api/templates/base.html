@@ -24,27 +24,33 @@
 
                         <div class="collapse navbar-collapse" id="navbarSupportedContent">
                             <ul class="navbar-nav mr-auto">
-                                <li class="nav-item">
-                                    <a class="nav-link" href="/">Home</a>
-                                </li>
                                 {% if request.user.is_authenticated %}
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="/api">API</a>
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownApi" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <span>API</span>
+                                        </a>
+                                        <div class="dropdown-menu" aria-labelledby="navbarDropdownApi">
+                                            <a class="dropdown-item" href="/api">API</a>
+                                            <a class="dropdown-item" href="/api_history">API History</a>
+                                        </div>
                                     </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="/cs_event_trigger_list">Event Trigger</a>
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownApi" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <span>Event</span>
+                                        </a>
+                                        <div class="dropdown-menu" aria-labelledby="navbarDropdownApi">
+                                            <a class="dropdown-item" href="/cs_event_trigger_list">Event Trigger</a>
+                                            <a class="dropdown-item" href="/cs_event_history">Event History</a>
+                                        </div>
                                     </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="/api_history">API History</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="/cs_event_history">Event History</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="/cs_user">Cloudstack User</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="/cs_event_server">Cloudstack Event Server</a>
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownApi" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <span>Server Account</span>
+                                        </a>
+                                        <div class="dropdown-menu" aria-labelledby="navbarDropdownApi">
+                                            <a class="dropdown-item" href="/cs_user">Cloudstack User</a>
+                                            <a class="dropdown-item" href="/cs_event_server">Cloudstack Event Server</a>
+                                        </div>
                                     </li>
                                 {% endif %}
                                 {% if not request.user.is_authenticated %}
