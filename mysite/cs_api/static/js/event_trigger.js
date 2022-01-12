@@ -93,6 +93,11 @@ if (data['formData']) {
         parameter.operator = parameter_data.operator;
         parameter.value = parameter_data.value;
     }
+} else {
+    Object.assign(app.formData, {
+        cloudstack_user_id: app.cs_users[0],
+        event_server_id: app.event_servers[0],
+    });
 }
 
 })();

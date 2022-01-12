@@ -307,7 +307,7 @@ def get_data_for_trigger(request, cs_event_trigger_id=0):
         }
         for category in Category.objects.all()
     ]
-    if cs_event_trigger_id:
+    if cs_event_trigger_id:  # for editing existing trigger
         cs_event_trigger = CloudstackEventTrigger.objects.get(pk=cs_event_trigger_id)
         res['formData'] = {
             'cloudstack_user_id': cs_event_trigger.cloudstack_user_id.id,
