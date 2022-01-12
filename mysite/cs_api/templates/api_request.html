@@ -6,55 +6,63 @@
     {% verbatim %}
         <div id="app">
             <form v-on:submit.prevent="submit()">
-                <fieldset>
-                    <legend>Cloudstack User</legend>
-                    <label>
-                        <select name="csUser" v-model="formData.csUser" v-on:input="onInputCategory()">
-                            <option v-for="csUser in cloudstackUsers" :key="csUser.id" v-bind:value="csUser">{{ csUser.url }}</option>
-                        </select>
-                    </label>
-                </fieldset>
-                <br/>
-                <fieldset>
-                    <legend>Request</legend>
-                    <label>
-                        <span><strong>Category</strong></span>
-                        <br/>
-                        <select name="category" v-model="formData.category" v-on:input="onInputCategory()">
-                            <option v-for="category in categoryList" :key="category.id" v-bind:value="category">{{ category.name }}</option>
-                        </select>
-                    </label>
-                    <template v-if="formData.category">
-                        <br/>
-                        <br/>
+                <div class="card">
+                    <div class="card-header"><h5 class="m-0">Cloudstack User</h5></div>
+                    <div class="card-body">
                         <label>
-                            <span><strong>Command</strong></span>
-                            <br/>
-                            <select name="command" v-model="formData.command" v-on:input="onInputCommand()">
-                                <option v-for="command in formData.category.commandList" :key="command.id" v-bind:value="command">{{ command.name }}</option>
+                            <select name="csUser" v-model="formData.csUser" v-on:input="onInputCategory()">
+                                <option v-for="csUser in cloudstackUsers" :key="csUser.id" v-bind:value="csUser">{{ csUser.url }}</option>
                             </select>
                         </label>
-                    </template>
-                    <template v-if="formData.command">
+                    </div>
+                </div>
+                <div class="card mt-2">
+                    <div class="card-header"><h5 class="m-0">Request</h5></div>
+                    <div class="card-body">
+                        <label>
+                            <h5 class="card-title mb-0">Category</h5>
+                            <select name="category" v-model="formData.category" v-on:input="onInputCategory()">
+                                <option v-for="category in categoryList" :key="category.id" v-bind:value="category">{{ category.name }}</option>
+                            </select>
+                        </label>
                         <br/>
-                        <br/>
-                        <span><strong>Parameters</strong></span>
-                        <div class="form-group" v-for="parameter in formData.command.parameterList" :key="parameter.id">
-                            <label v-bind:value="parameter" v-bind:for="'parameter_' + parameter.id">
-                                <span><span v-if="parameter.required">*</span> {{ parameter.name }} - {{ parameter.description }}</span>
+                        <template v-if="formData.category">
+                            <label>
+                                <h5 class="card-title mb-0">Command</h5>
+                                <select name="command" v-model="formData.command" v-on:input="onInputCommand()">
+                                    <option v-for="command in formData.category.commandList" :key="command.id" v-bind:value="command">{{ command.name }}</option>
+                                </select>
                             </label>
-                            <input class="form-control" v-bind:id="'parameter_' + parameter.id" type="text" v-model="formData.parameters[parameter.id]" :required="parameter.required"/>
-                        </div>
-                    </template>
-                </fieldset>
-                <br/>
-                <fieldset v-if="formData.command">
-                    <button>Send</button>
-                </fieldset>
+                        </template>
+                        <template v-if="formData.command">
+                            <br/>
+                            <h5 class="card-title mb-0">Parameters</h5>
+                            <div class="card bg-light mt-2" v-for="parameter in formData.command.parameterList" :key="parameter.id">
+                                <div class="card-header">
+                                    <label class="mb-0" v-bind:value="parameter" v-bind:for="'parameter_' + parameter.id">
+                                        <span><span v-if="parameter.required">*</span> {{ parameter.name }} - {{ parameter.description }}</span>
+                                    </label>
+                                </div>
+                                <div class="card-body p-1">
+                                    <input class="form-control" v-bind:id="'parameter_' + parameter.id" type="text" v-model="formData.parameters[parameter.id]" :required="parameter.required"/>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                <div class="card mt-2" v-if="formData.command">
+                    <div class="card-body">
+                        <button class="btn btn-primary">Send</button>
+                    </div>
+                </div>
             </form>
-            <div v-if="lastResponse">
-                <h3>Last Response:</h3>
-                <pre>{{ lastResponse }}</pre>
+            <div class="card mt-2" v-if="lastResponse">
+                <div class="card-header">
+                    <h3 class="m-0">Last Response</h3>
+                </div>
+                <div class="card-body">
+                    <pre>{{ lastResponse }}</pre>
+                </div>
             </div>
         </div>
     {% endverbatim %}
