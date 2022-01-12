@@ -5,7 +5,7 @@
 {% block content %}
     <div class="card mb-2">
         <div class="card-header">
-            <h1>API History</h1>
+            <h1 class="m-0">API History</h1>
         </div>
         <div class="card-body">
             <p>Displaying {{ first }} - {{ last }} of {{ total }}. Most recent are shown first.</p>
@@ -16,7 +16,7 @@
     {% for api_request in api_request_list %}
         <div class="card mb-2">
             <div class="card-header">
-                <span class="badge badge-info">{{ api_request.created_at }}</span> <span>{{ api_request.cloudstack_user_id.url }}</span>
+                <span class="badge badge-light"># {{ api_request.id }}</span> <span class="badge badge-info">{{ api_request.created_at }}</span> <span>{{ api_request.cloudstack_user_id.url }}</span>
                 <br>
             </div>
             <div class="card-body">

@@ -53,7 +53,11 @@ class CloudstackEventServer(models.Model):
     def listen(self):
 
         def on_message_callback(ch, method, properties, body):
-            event_log = CloudstackEventLog.objects.create(cloudstack_event_server_id=self, routing_key=method.routing_key, body=body.decode("utf-8"))
+            try:
+                jsonBody = json.dumps(json.loads(body.decode("utf-8")), indent=4)
+            except Exception:
+                jsonBody = body
+            event_log = CloudstackEventLog.objects.create(cloudstack_event_server_id=self, routing_key=method.routing_key, body=jsonBody)
             print(f'message: {event_log}')
             event_log.trigger_actions()
 

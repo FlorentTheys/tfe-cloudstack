@@ -3,30 +3,30 @@
 {% load static %}
 
 {% block content %}
-    <h1>Event History</h1>
-    <p>Displaying {{ first }} - {{ last }} of {{ total }}.</p>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Server</th>
-                <th>Command</th>
-                <th>Result</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for event_log in event_log_list %}
-                <tr>
-                    <td>{{ event_log.cloudstack_event_server_id }}</td>
-                    <td>{{ event_log.routing_key }}</td>
-                    <td>{{ event_log.body }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% if prev_offset is not False %}
-        <a href="/api_history/{{ prev_offset }}/{{ limit }}">Previous</a>
-    {% endif %}
-    {% if next_offset is not False %}
-        <a href="/api_history/{{ next_offset }}/{{ limit }}">Next</a>
-    {% endif %}
+    <div class="card mb-2">
+        <div class="card-header">
+            <h1 class="m-0">Event History</h1>
+        </div>
+        <div class="card-body">
+            <p>Displaying {{ first }} - {{ last }} of {{ total }}. Most recent are shown first.</p>
+            <a class="btn btn-secondary {% if prev_offset is False %}disabled{% endif %}" href="/cs_event_history/{{ prev_offset }}/{{ limit }}" >Previous</a>
+            <a class="btn btn-primary {% if next_offset is False %}disabled{% endif %}" href="/cs_event_history/{{ next_offset }}/{{ limit }}">Next</a>
+        </div>
+    </div>
+    {% for event_log in event_log_list %}
+        <div class="card mb-2">
+            <div class="card-header">
+                <span class="badge badge-light"># {{ event_log.id }}</span> <span class="badge badge-info">{{ event_log.cloudstack_event_server_id }}</span> <strong>{{ event_log.routing_key }}</strong>
+            </div>
+            <div class="card-body">
+                <pre>{{ event_log.body }}</pre>
+            </div>
+        </div>
+    {% endfor %}
+    <div class="card mb-2">
+        <div class="card-body">
+            <a class="btn btn-secondary {% if prev_offset is False %}disabled{% endif %}" href="/cs_event_history/{{ prev_offset }}/{{ limit }}" >Previous</a>
+            <a class="btn btn-primary {% if next_offset is False %}disabled{% endif %}" href="/cs_event_history/{{ next_offset }}/{{ limit }}">Next</a>
+        </div>
+    </div>
 {% endblock %}

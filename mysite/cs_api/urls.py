@@ -22,6 +22,9 @@ urlpatterns = [
 
     # cs event
     path('cs_event_history', views.cs_event_history, name='Event History'),
+    path('cs_event_history/<int:offset>', views.cs_event_history, name='API History'),
+    path('cs_event_history/<int:offset>/<int:limit>', views.cs_event_history, name='API History'),
+
     path('cs_event_server', views.cs_event_server, name='cs_event_server'),
     path('cs_event_server_add', views.cs_event_server_add, name='cs_event_server_add'),
     path('cs_event_server_delete/<int:cs_event_server_id>', views.cs_event_server_delete, name='cs_event_server_delete'),
