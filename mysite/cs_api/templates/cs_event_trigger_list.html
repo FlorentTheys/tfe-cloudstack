@@ -3,42 +3,50 @@
 {% load static %}
 
 {% block content %}
-    <h1>Event Trigger List</h1>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Event Server</th>
-                <th>Cloudstack User</th>
-                <th>Conditions</th>
-                <th>Command</th>
-                <th>Parameters</th>
-                <th>Edit</th>
-                <th>Delete</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for event_trigger in event_trigger_list %}
-                <tr>
-                    <td>{{ event_trigger.id }}</td>
-                    <td>{{ event_trigger.cloudstack_event_server_id }}</td>
-                    <td>{{ event_trigger.cloudstack_user_id }}</td>
-                    <td>
-                        {% for condition in event_trigger.cloudstack_event_trigger_condition_ids.all %}
-                            {{ condition }},
-                        {% endfor %}
-                    </td>
-                    <td>{{ event_trigger.command_id }}</td>
-                    <td>
-                        {% for parameter in event_trigger.cloudstack_event_trigger_action_parameter_ids.all %}
-                            {{ parameter }},
-                        {% endfor %}
-                    </td>
-                    <td><a href="/cs_event_trigger_add/{{ event_trigger.id }}"><i class="fa fa-edit" title="Edit"/></a></td>
-                    <td><a href="/cs_event_trigger_delete/{{ event_trigger.id }}"><i class="fa fa-trash" title="Delete"/></a></td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <a href="/cs_event_trigger_add">Add Event Trigger</a>
+    <div class="card">
+        <div class="card-header">
+            <h1 class="m-0">Event Trigger List</h1>
+        </div>
+        <div class="card-body">
+            <a class="btn btn-primary" href="/cs_event_trigger_add">Add Event Trigger</a>
+        </div>
+    </div>
+    {% for event_trigger in event_trigger_list %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <span class="badge badge-light"># {{ event_trigger.id }}</span>
+                <span class="badge badge-info">{{ event_trigger.cloudstack_event_server_id }}</span>
+                <span class="badge badge-info">{{ event_trigger.cloudstack_user_id }}</span>
+            </div>
+            <div class="card-body">
+                <h5>Conditions</h5>
+                <ul>
+                    {% for condition in event_trigger.cloudstack_event_trigger_condition_ids.all %}
+                        <li>
+                            <span>{{ condition.data_key }}</span>
+                            <strong class="mx-2">{{ condition.operator }}</strong>
+                            <span>{{ condition.value }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <h5>Command</h5>
+                <p><strong>{{ event_trigger.command_id }}</strong></p>
+
+                <h5>Parameters</h5>
+                <ul>
+                {% for parameter in event_trigger.cloudstack_event_trigger_action_parameter_ids.all %}
+                    <li>
+                        <span>{{ parameter.parameter_id }}</span>
+                        <strong class="mx-2">{{ parameter.operator }}</strong>
+                        <span>{{ parameter.value }}</span>
+                    </li>
+                {% endfor %}
+                </ul>
+            </div>
+            <div class="card-footer">
+                <a class="btn btn-secondary btn-sm" href="/cs_event_trigger_add/{{ event_trigger.id }}"><i class="fa fa-edit" title="Edit"></i> Edit</a>
+                <a class="btn btn-danger btn-sm" href="/cs_event_trigger_delete/{{ event_trigger.id }}"><i class="fa fa-trash" title="Delete"></i> Delete</a>
+            </div>
+        </div>
+    {% endfor %}
 {% endblock %}
