@@ -3,24 +3,26 @@
 {% load static %}
 
 {% block content %}
-    <h1>Cloudstack Event Servers</h1>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Host</th>
-                <th>Exchange</th>
-                <th>Delete</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for cs_event_server in request.user.cloudstack_event_server_ids.all %}
-                <tr>
-                    <td>{{ cs_event_server.host }}</td>
-                    <td>{{ cs_event_server.exchange }}</td>
-                    <td><a href="/cs_event_server_delete/{{ cs_event_server.id }}"><i class="fa fa-trash" title="Delete"/></a></td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <a href="/cs_event_server_add">Add Cloudstack Event Server</a>
+    <div class="card mb-2">
+        <div class="card-header">
+            <h1 class="m-0">Cloudstack Event Servers</h1>
+        </div>
+        <div class="card-body">
+            <a class="btn btn-primary" href="/cs_event_server_add">Add Cloudstack Event Server</a>
+        </div>
+    </div>
+    {% for cs_event_server in request.user.cloudstack_event_server_ids.all %}
+        <div class="card mt-2">
+            <div class="card-header">
+                <span class="badge badge-light"># {{ cs_event_server.id }}</span>
+            </div>
+            <div class="card-body">
+                <span>host:</span> <strong>{{ cs_event_server.host }}</strong><br/>
+                <span>exchange:</span> <strong>{{ cs_event_server.exchange }}</strong>
+            </div>
+            <div class="card-footer">
+                <a class="btn btn-danger btn-sm" href="/cs_event_server_delete/{{ cs_event_server.id }}"><i class="fa fa-trash" title="Delete"></i> Delete</a>
+            </div>
+        </div>
+    {% endfor %}
 {% endblock %}
