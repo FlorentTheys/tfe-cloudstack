@@ -3,26 +3,26 @@
 {% load static %}
 
 {% block content %}
-    <h1>Cloudstack Users</h1>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>URL</th>
-                <th>API Key</th>
-                <th>Secret Key</th>
-                <th>Delete</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for cs_user in request.user.cloudstack_user_ids.all %}
-                <tr>
-                    <td>{{ cs_user.url }}</td>
-                    <td>{{ cs_user.api_key }}</td>
-                    <td>{{ cs_user.secret_key }}</td>
-                    <td><a href="/cs_user_delete/{{ cs_user.id }}"><i class="fa fa-trash" title="Delete"/></a></td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <a href="/cs_user_add">Add Cloudstack User</a>
+    <div class="card mb-2">
+        <div class="card-header">
+            <h1 class="m-0">Cloudstack Users</h1>
+        </div>
+        <div class="card-body">
+            <a class="btn btn-primary" href="/cs_user_add">Add Cloudstack User</a>
+        </div>
+    </div>
+    {% for cs_user in request.user.cloudstack_user_ids.all %}
+        <div class="card mt-2">
+            <div class="card-header">
+                <span class="badge badge-light"># {{ cs_user.id }}</span> <span class="badge badge-info">{{ cs_user.url }}</span>
+            </div>
+            <div class="card-body">
+                <span>api key</span>: <strong>{{ cs_user.api_key }}</strong><br/>
+                <span>secret key</span>: <strong>{{ cs_user.secret_key }}</strong>
+            </div>
+            <div class="card-footer">
+                <a class="btn btn-danger btn-sm" href="/cs_user_delete/{{ cs_user.id }}"><i class="fa fa-trash" title="Delete"></i> Delete</a>
+            </div>
+        </div>
+    {% endfor %}
 {% endblock %}
