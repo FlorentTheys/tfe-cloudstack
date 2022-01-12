@@ -40,7 +40,7 @@
                             <div class="card bg-light mt-2" v-for="parameter in formData.command.parameterList" :key="parameter.id">
                                 <div class="card-header">
                                     <label class="mb-0" v-bind:value="parameter" v-bind:for="'parameter_' + parameter.id">
-                                        <span><span v-if="parameter.required">*</span> {{ parameter.name }} - {{ parameter.description }}</span>
+                                        <span><span v-if="parameter.required">*</span> <strong>{{ parameter.name }}</strong> - {{ parameter.description }}</span>
                                     </label>
                                 </div>
                                 <div class="card-body p-1">

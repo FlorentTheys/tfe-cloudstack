@@ -12,7 +12,11 @@ const app = new Vue({
             category: undefined,
             cloudstack_user_id: undefined,
             command: undefined,
-            conditions: [],
+            conditions: [{
+                data_key: '',
+                operator: '',
+                value: '',
+            }],
             event_server_id: undefined,
         },
     },
